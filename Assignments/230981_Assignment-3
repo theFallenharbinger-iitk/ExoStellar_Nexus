@@ -1,0 +1,47 @@
+#https://colab.research.google.com/drive/1vh5q-T52oBsOfa_JDT9QcBo9jsGzMADl?authuser=0#scrollTo=gH7L30lyvRau
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+from google.colab import drive
+
+# Function to process an image (sharpen and denoise)
+def process_image(image_path):
+    # Load the original noisy and blurry image
+    original = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+
+    # Convert the image from BGR (OpenCV default) to gray scale
+    original_gray = cv2.cvtColor(original, cv2.COLOR_BGR2GRAY)
+
+    # Define the sharpen filter
+    sharpen_filter = np.array([[-1, -1, -1],
+                               [-1,  9, -1],
+                               [-1, -1, -1]])
+
+    # Apply the sharpen filter to the original image
+    sharp_image = cv2.filter2D(original_gray, -1, sharpen_filter)
+
+    # Apply denoising to the sharpened image
+    dst = cv2.fastNlMeansDenoising(sharp_image, None, 3, 7, 21)
+
+    return dst
+
+# Mount Google Drive
+drive.mount('/content/drive')
+
+# Specify the directory containing images
+image_directory = '/content/drive/My Drive/images'
+
+# Get list of images in the directory
+image_files = [f for f in os.listdir(image_directory) if os.path.isfile(os.path.join(image_directory, f))]
+
+# Iterate over each image file and process it
+for image_file in image_files:
+    image_path = os.path.join(image_directory, image_file)
+    processed_image = process_image(image_path)
+    
+    # Display the processed image
+    plt.imshow(processed_image, cmap='gray')
+    plt.axis('off')
+    plt.title(image_file)
+    plt.show()
